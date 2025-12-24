@@ -112,7 +112,7 @@ def sync_catalogs(app_settings: AppSettings, app_management: AppManagement) -> N
                     try:
                         os.remove(item["filepath"])
                         printmsg.print_success(
-                            f'Файл {item["filepath"]} ({item['filedate']}) отличается по дате с FTP ({found_ftp_item[0]["filedate"]}) и удален успешно')
+                            f'Файл {item["filepath"]} ({item["filedate"]}) отличается по дате с FTP ({found_ftp_item[0]["filedate"]}) и удален успешно')
                     except Exception as ex:
                         printmsg.print_error(
                             f'Error. Файл {item["filepath"]} отличается по дате с FTP и не удален: {ex}')
@@ -195,7 +195,7 @@ def main():
 
     if (not is_error_result_folder) or ftp_dt != cur_dt or len(ftp_file_list) != len(local_file_list) or len(
             local_file_list) == 0:
-        message = f'\tПредыдущий запуск: {is_error_result_folder} ({'успешно' if is_error_result_folder == True else 'с ошибками'}). Ошибка: {not is_error_result_folder}\n'
+        message = f'\tПредыдущий запуск: {is_error_result_folder} ({"успешно" if is_error_result_folder == True else "с ошибками"}). Ошибка: {not is_error_result_folder}\n'
         message += f'\tДата: DIR = {cur_dt}; FTP = {ftp_dt}. Ошибка: {ftp_dt != cur_dt}\n'
         message += f'\tКоличество файлов: DIR = {len(local_file_list)}; FTP = {len(ftp_file_list)}. Ошибка: {len(ftp_file_list) != len(local_file_list)}'
 
@@ -277,7 +277,7 @@ def main():
 
         cur_dt = CLWorkFile.get_max_date_from_folder(app_management.result_folder, printmsg, False)
         printmsg.print_debug(
-            f'Update ({cur_dt.strftime('%Y/%m/%d %H:%M:%S')}) ({len(file_version_new)}): {file_version_new}\n')
+            f'Update ({cur_dt.strftime("%Y/%m/%d %H:%M:%S")}) ({len(file_version_new)}): {file_version_new}\n')
 
         CLWorkFile.write_log(os.getcwd(), f'{app_settings.IsSendMail=}; {app_settings.IsCreateDescription=}; {len(file_version_new)=}')
 
