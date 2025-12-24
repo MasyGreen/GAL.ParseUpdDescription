@@ -158,6 +158,7 @@ class CLFTPReaderThread:
             # Список файлов FTP
             files = ftp.mlsd(self.app_settings.FTPDir)
 
+            ind: int = 0
             # Формат: file=('Z_StaffOrders_RES_912720.txt', {'type': 'file', 'size': '1586019', 'modify': '20251114082947'})
             for file in files:
                 file_name = file[0]
@@ -170,7 +171,9 @@ class CLFTPReaderThread:
                     dt = CLUNCDate.unc_to_moskow(dt, self.printmsg)
 
                     # Полный путь к FTP, имя файла, дата
-                    _row = {"filepath": f'{self.app_settings.FTPHost}/{self.app_settings.FTPDir}/{file_name}',
+                    ind = ind + 1
+                    _row = {"ind": ind,
+                            "filepath": f'{self.app_settings.FTPHost}/{self.app_settings.FTPDir}/{file_name}',
                             "filename": file_name,
                             "filedate": dt
                             }

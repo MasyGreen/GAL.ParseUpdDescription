@@ -51,23 +51,23 @@ class CLWorkFile:
         Проверить каталог на наличие *.TXT_WIN1251 - то надо удалить все файлы (предыдущий запуск окончился ошибкой)
         :param app_management:
         :param printmsg:
-        :return: True - были ошибки нужна принудительная обработка
+        :return: True - корректный каталог, False - были ошибки нужна принудительная обработка
         """
         printmsg.print_header(f'Start. Проверка каталога результата')
-        result: bool = False
+        result: bool = True
 
         for filename in os.listdir(app_management.download_folder):
             if os.path.isfile(os.path.join(app_management.download_folder, filename)):
                 name, extension = os.path.splitext(filename)
                 if extension.lower() == ".txt_win1251":
-                    result = True
+                    result = False
                     break
 
-        printmsg.print_success(f'\tТребуется удаление: {result}')
+        printmsg.print_success(f'\tТребуется удаление: {not result}')
 
         # Остались файлы от предыдущего процесса - удаляем все файлы промежуточные и результат
         count: int = 0
-        if result:
+        if not result:
             try:
                 for filename in os.listdir(app_management.download_folder):
                     if os.path.isfile(os.path.join(app_management.download_folder, filename)):
@@ -150,9 +150,10 @@ class CLWorkFile:
         :return: список {filepath, filename, version, filedate}
         """
         result = []
-        printmsg.print_header(f'Start. Получение версий файлов')
+        printmsg.print_header(f'Start. Получение версий файлов локального каталога FTP')
         try:
-            for filename in os.listdir(app_management.result_folder):
+            ind: int = 0
+            for filename in sorted(os.listdir(app_management.result_folder)):
                 if os.path.isfile(os.path.join(app_management.result_folder, filename)):
                     name, extension = os.path.splitext(filename)
                     if extension.lower() == ".txt":
@@ -162,7 +163,9 @@ class CLWorkFile:
                         version = CLWorkFile.read_version_from_file(
                             os.path.join(app_management.result_folder, filename), printmsg)
 
-                        row = {"filepath": os.path.join(app_management.result_folder, filename),
+                        ind = ind + 1
+                        row = {"ind": ind,
+                               "filepath": os.path.join(app_management.result_folder, filename),
                                "filename": filename,
                                "version": version,
                                "filedate": file_date

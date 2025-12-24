@@ -52,6 +52,7 @@ class CLEMail:
             email_list = app_settings.MailTo.split(',')
 
         printmsg.print_debug(f'\tСписок получателей: {email_list}')
+        CLWorkFile.write_log(os.getcwd(), f'Список получателей: {email_list}')
 
         # Копирование тела письма в каталог
         if app_settings.IsCreateDescription:
@@ -73,7 +74,7 @@ class CLEMail:
                 printmsg.print_error(f'\t{ex}')  # __str__ allows args to be printed directly,
 
         # Отправка сообщения
-        if app_settings.IsSendMail:
+        if app_settings.IsSendMail and len(email_list) > 0 :
             try:
                 for cur_email in email_list:
                     printmsg.print_service_message(f'\tSend e-mail: {cur_email}')

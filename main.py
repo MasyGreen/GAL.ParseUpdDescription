@@ -193,13 +193,16 @@ def main():
     local_file_list = CLWorkFile.get_local_file_list(app_management.result_folder, printmsg)
     ftp_file_list = CLWorkFile.get_local_file_list(app_management.download_folder, printmsg)
 
-    if is_error_result_folder or ftp_dt != cur_dt or len(ftp_file_list) != len(local_file_list) or len(
+    if (not is_error_result_folder) or ftp_dt != cur_dt or len(ftp_file_list) != len(local_file_list) or len(
             local_file_list) == 0:
-        CLWorkFile.write_log(os.getcwd(), f'Обработка. Дата DIR: {cur_dt}; Дата FTP: {ftp_dt}')
-        printmsg.print_debug(f'Предыдущий запуск: {is_error_result_folder}; Дата DIR: {cur_dt}; Дата FTP: {ftp_dt}')
-        printmsg.print_debug(f'Количество файлов: DIR: {len(local_file_list)}; FTP: {len(ftp_file_list)}')
+        message = f'\tПредыдущий запуск: {is_error_result_folder} ({'успешно' if is_error_result_folder == True else 'с ошибками'}). Ошибка: {not is_error_result_folder}\n'
+        message += f'\tДата: DIR = {cur_dt}; FTP = {ftp_dt}. Ошибка: {ftp_dt != cur_dt}\n'
+        message += f'\tКоличество файлов: DIR = {len(local_file_list)}; FTP = {len(ftp_file_list)}. Ошибка: {len(ftp_file_list) != len(local_file_list)}'
 
-        # Получаем версии файлов из унифицированных названий (без версии) ATLMQ_DLL.txt
+        CLWorkFile.write_log(os.getcwd(), message)
+        printmsg.print_debug(message)
+
+        # Получаем версии файлов из унифицированных названий (без версии) ATLMQ_DLL.txt из локального FTP
         file_version_exist = CLWorkFile.read_versions(app_management, printmsg)
         printmsg.print_debug(f'Version (exist) ({len(file_version_exist)}): {file_version_exist}\n')
 
@@ -220,6 +223,16 @@ def main():
                 # FNSNDSCAWSCOM_DLL_9110
                 new_file_name = re.sub(r'_(\d+$)', '', name)
                 printmsg.print_debug(f'{name.ljust(30)} -> {new_file_name}', 2)
+
+                # Возможно ошибочное срабатывание когда на FTP выложены сразу два файла одного компонента, но с разной версией
+                # GalDiadocConnectS_DLL_91180.txt
+                # GalDiadocConnectS_DLL_91190.txt
+                double_item = [item for item in unification_files if
+                            item['filenamenew'] == f'{new_file_name}.txt']
+                if len(double_item) > 0:
+                    message = f'Два файла одной версии: {new_file_name} [{double_item[0]["filenameold"]}]/[{filename}]'
+                    CLWorkFile.write_log(os.getcwd(), message)
+                    printmsg.print_error(message)
 
                 unification_files.append({"filenameold": filename, "filenamenew": f'{new_file_name}.txt'})
 
@@ -265,6 +278,8 @@ def main():
         cur_dt = CLWorkFile.get_max_date_from_folder(app_management.result_folder, printmsg, False)
         printmsg.print_debug(
             f'Update ({cur_dt.strftime('%Y/%m/%d %H:%M:%S')}) ({len(file_version_new)}): {file_version_new}\n')
+
+        CLWorkFile.write_log(os.getcwd(), f'{app_settings.IsSendMail=}; {app_settings.IsCreateDescription=}; {len(file_version_new)=}')
 
         if (app_settings.IsSendMail or app_settings.IsCreateDescription) and len(file_version_new) > 0:
             CLEMail.sending_email(cur_dt, file_version_new, app_settings, app_management, printmsg)
